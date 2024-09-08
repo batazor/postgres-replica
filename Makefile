@@ -40,12 +40,18 @@ promote-master-to-master:
 	@docker exec -u postgres $(MASTER_CONTAINER) pg_ctl promote -D $(DATA_DIR)
 	@echo "Original master promoted to master!"
 
+# Stop the current slave
+stop-slave:
+	@docker start $(SLAVE_CONTAINER)
+	@echo "Stopping the current slave..."
+	@docker exec -u postgres $(SLAVE_CONTAINER) pg_ctl stop -D $(DATA_DIR) -m fast
+	@echo "Current slave stopped."
+	@docker start $(SLAVE_CONTAINER)
+
 # Reconfigure the current master as the slave
 reconfigure-slave-as-slave:
 	@echo "Reconfiguring the current master as the slave..."
-	@docker exec $(SLAVE_CONTAINER) bash -c "rm -rf $(DATA_DIR)/*"
-	@docker exec $(SLAVE_CONTAINER) bash -c "pg_basebackup -h $(MASTER_CONTAINER) -U postgres -D $(DATA_DIR) -Fp -Xs -P -R"
-	@docker exec $(SLAVE_CONTAINER) pg_ctl start -D $(DATA_DIR)
+	@docker exec $(SLAVE_CONTAINER) bash -c "rm -rf $(DATA_DIR)/* && pg_basebackup -h $(MASTER_CONTAINER) -U postgres -D $(DATA_DIR) -Fp -Xs -P -R"
 	@echo "Current master reconfigured as slave!"
 
 # Switch roles between master and slave

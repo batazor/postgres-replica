@@ -53,6 +53,7 @@ reconfigure-slave-as-slave:
 	@echo "Reconfiguring the current master as the slave..."
 	@docker exec $(SLAVE_CONTAINER) bash -c "rm -rf $(DATA_DIR)/* && pg_basebackup -h $(MASTER_CONTAINER) -U postgres -D $(DATA_DIR) -Fp -Xs -P -R"
 	@echo "Current master reconfigured as slave!"
+	@docker start $(SLAVE_CONTAINER)
 
 # Switch roles between master and slave
 switch-roles:

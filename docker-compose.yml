@@ -42,26 +42,6 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       retries: 5
-    entrypoint:
-      - bash
-      - -c
-      - |
-        # Ensure the data directory is empty before running pg_basebackup
-        if [ "$(ls -A /var/lib/postgresql/data)" ]; then
-          echo "Data directory is not empty. Cleaning up..."
-          rm -rf /var/lib/postgresql/data/*
-        fi
-        
-        # Wait for master to be ready
-        until pg_isready -h postgres-master -U postgres; do
-          sleep 1;
-        done
-        
-        # Copy the initial database backup from master
-        pg_basebackup -h postgres-master -U postgres -D /var/lib/postgresql/data -Fp -Xs -P -R
-        
-        # Start PostgreSQL
-        exec docker-entrypoint.sh postgres
 
 networks:
   postgres-network:

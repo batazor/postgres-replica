@@ -2,27 +2,37 @@
 
 #### Getting start
 
+**Run master:**
+
 ```
 # Run postgres master and slave
 $> make up
 
-# Set slave as slave
-$> make reconfigure-slave-as-slave
+# Enter master container
+$> docker exec -u postgres -it postgres-master bash
 
-# Write test data
+# Run postgres on master
+$> exec docker-entrypoint.sh postgres
+```
+
+**Run slave:**
+
+```
+# Enter slave container
+$> docker exec -u postgres -it postgres-slave bash
+
+# Made replication
+$> pg_basebackup -h postgres-master -U postgres -D /var/lib/postgresql/data -Fp -Xs -P -R
+
+# Run postgres on slave
+$> exec docker-entrypoint.sh postgres
+```
+
+**Example:**
+
+```
+# Write to master
 $> bash write_test_data.sh
-
-# Read test data
+# Read from slave
 $> bash read_from_slave.sh
-
-# Set slave as master
-$> make promote-slave-to-master
-$> make stop-master
-$> make reconfigure-master-as-slave
-
-# Write test data
-$> bash write_test_data.sh #> failed because master is read-only
-
-# Read test data
-$> bash read_from_slave.sh #> success
 ```
